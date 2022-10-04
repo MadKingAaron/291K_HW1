@@ -69,7 +69,12 @@ print('Grad_Fixed:',grad_fixed(A,y,y_hat))
 # print(sigmoid(A, para))
 
 print(grad_decent(A,y,y_hat, para, n_iter=100), grad_decent(A,y,y_hat, para))
-
+X = A
+(d,m) = X.shape
+s = np.zeros(shape=m, dtype=np.float64) # this is the desired type and shape for the output
+        # TODO ======================== YOUR CODE HERE =====================================
+s += (para.T @ X)
+print(s)
 """
 A[2] = 2
 print(A.todense())

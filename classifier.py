@@ -128,6 +128,17 @@ class classifier_agent():
             pred = 1
 
         return pred
+    
+    def sigmoid(self, X):
+        '''
+        This function passes the score through a sigmoid function
+        :param X: d by m sparse (csc_array) matrix
+        :return: Numpy array of probabilities of true predictions for all x_i
+        '''
+        y = self.score_function(X)
+        return np.exp(y)/(1+np.exp(y))
+
+
     def predict(self, X, RAW_TEXT=False, RETURN_SCORE=False):
         '''
         This function makes a binary prediction or a numerical score
@@ -141,11 +152,12 @@ class classifier_agent():
 
         # TODO ======================== YOUR CODE HERE =====================================
         # This should be a simple but useful function.
-        preds = np.zeros(shape=X.shape[1])
+        preds = self.sigmoid(X,self.params)
         for i in range(X.shape[1]):
-            # Get x_i
-            x_i = X.getcol(i)
-            preds[i] = self.pred_vect(x_i)
+            if preds[i] >= 0.5:
+                preds[i] = 1.0
+            else:
+                preds[i] = 0.0
         
         # TODO =============================================================================
 
@@ -165,7 +177,6 @@ class classifier_agent():
         '''
         if RAW_TEXT:
             X = self.batch_feat_map(X)
-            RAW_TEXT = False
             
         y = np.array(y)
         # TODO ======================== YOUR CODE HERE =====================================
@@ -220,6 +231,17 @@ class classifier_agent():
 
         return loss
 
+    def single_grad(self, X, y, y_hat):
+        '''
+        It returns the gradient of the loss function at the current params with respect to x_i.
+        :param X: d by 1 sparse (csc_array) matrix
+        :param y: m dimensional vector (numpy.array) of true labels
+        :param y_hat: m dimensional vector (numpy.array) of predicted label
+        :return: Return an nd.array of size the same as self.params
+        '''
+        grad = X * (y_hat - y)
+        return np.array(grad).flatten()
+
     def gradient(self, X, y):
         '''
         It returns the gradient of the (average) loss function at the current params.
@@ -233,18 +255,19 @@ class classifier_agent():
         # Hint 2:  vectorized operations will be orders of magnitudely faster than a for loop
         # Hint 3:  don't make X a dense matrix
 
-        grad = np.zeros_like(self.params)
+        grad = np.zeros_like(self.params, dtype=np.float64)
         y_hat = self.predict(X)
-        grad = np.dot(X.T, (y_hat - y))/X.shape[1]
+        #grad = np.dot(X.T, (y_hat - y))/X.shape[1]
+
+        for i in range(X.shape[1]):
+            #print(X.getcol(i).shape)
+            grad += self.single_grad(X.getcol(i).todense(), y[i], y_hat[i])  
+        
+        grad /= X.shape[1]
         # TODO =============================================================================
         
         return grad
 
-    def _single_gd(self, selected_vec, label, lr=0.01):
-        '''
-        The function  generates a signle gradient descent operation on a selected x_i
-        '''
-        pass
     def train_gd(self, train_sentences, train_labels, niter, lr=0.01):
         '''
         The function should updates the parameters of the model for niter iterations using Gradient Descent
@@ -264,6 +287,9 @@ class classifier_agent():
         train_errors = [self.error(Xtrain, ytrain)]
         # TODO ======================== YOUR CODE HERE =====================================
         # You need to iteratively update self.params
+        for n in range(niter):
+            self.params -= lr * self.gradient(Xtrain, ytrain)
+            # TODO Get error and loss
         # TODO =============================================================================
         return train_losses, train_errors
 
@@ -292,7 +318,11 @@ class classifier_agent():
         # You need to iteratively update self.params
         # You should use the following for selecting the index of one random data point.
 
-        idx = np.random.choice(len(ytrain), 1)
+        
+        for n in range(nepoch):
+            idx = np.random.choice(len(ytrain), 1)
+            y_hat = self.predict(Xtrain)
+            param -= self.single_grad(Xtrain.getcol(idx),ytrain[idx],y_hat[idx])
 
         # TODO =============================================================================
         return train_losses, train_errors
