@@ -112,9 +112,9 @@ class classifier_agent():
         '''
 
         (d,m) = X.shape
-        s = np.zeros(shape=m) # this is the desired type and shape for the output
+        s = np.zeros(shape=m, dtype=np.float64) # this is the desired type and shape for the output
         # TODO ======================== YOUR CODE HERE =====================================
-
+        s += (self.params.T @ X)
         # TODO =============================================================================
         return s
 
