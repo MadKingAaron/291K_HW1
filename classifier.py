@@ -217,15 +217,21 @@ class classifier_agent():
         # The function should work for any integer m > 0.
         # You may first call score_function
 
-        loss =  0.0
+        # Get prob for each x_i
+        probs = self.sigmoid(X)
+        # Get individual loss values for all x_i
+        loss_vals = -1*((y*np.log(probs)) + ((1-y)*np.log(1-probs)))
 
-        # Add together individual training loss
+        # Get average loss for X
+        loss +=  np.sum(loss_vals)/X.shape[1]
+
+        """ # Add together individual training loss
         for i in range(X.shape[1]):
             x_i = X.getcol(i)
             loss += self._individual_loss(x_i, y[i])
         
         # Take avg loss to get training loss
-        loss /= X.shape[1]
+        loss /= X.shape[1] """
 
         # TODO =============================================================================
 

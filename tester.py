@@ -75,6 +75,25 @@ s = np.zeros(shape=m, dtype=np.float64) # this is the desired type and shape for
         # TODO ======================== YOUR CODE HERE =====================================
 s += (para.T @ X)
 print(s)
+
+
+
+def score(para, X):
+    return para @ X
+def activation(z):
+    return np.exp(z)/(1+np.exp(z))
+def predict(para, X):
+    y_hat = activation(score(para, X))
+    preds = np.array([1 if y_i>=0.5 else 0 for y_i in y_hat])
+    return preds
+def loss(X, y, para):
+    #preds = predict(para, X)
+    preds = activation(score(para, X))
+    print(np.log(0))
+    loss_vals = -1*((y*np.log(preds)) + ((1-y)*np.log(1-preds)))
+    print(loss_vals)
+    cum_loss = np.sum(loss_vals)/X.shape[1]
+    return loss_vals, cum_loss
 """
 A[2] = 2
 print(A.todense())
