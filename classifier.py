@@ -114,7 +114,7 @@ class classifier_agent():
         (d,m) = X.shape
         s = np.zeros(shape=m, dtype=np.float64) # this is the desired type and shape for the output
         # TODO ======================== YOUR CODE HERE =====================================
-        s += (self.params.T @ X)
+        s += (self.params @ X)
         # TODO =============================================================================
         return s
 
@@ -152,6 +152,9 @@ class classifier_agent():
 
         # TODO ======================== YOUR CODE HERE =====================================
         # This should be a simple but useful function.
+        if RETURN_SCORE:
+            return self.score_function(X)
+        
         preds = self.sigmoid(X,self.params)
         for i in range(X.shape[1]):
             if preds[i] >= 0.5:
@@ -185,7 +188,7 @@ class classifier_agent():
         # y[y==0] = -1
         err =  0.0
         # Get predictions for X
-        preds = self.predict(X=X, RAW_TEXT=RAW_TEXT, RETURN_SCORE=True)
+        preds = self.predict(X=X, RAW_TEXT=RAW_TEXT)
 
         # Check how many predictions are incorrect
         for i in range(X.shape[1]):
@@ -327,8 +330,9 @@ class classifier_agent():
         
         for n in range(nepoch):
             idx = np.random.choice(len(ytrain), 1)
-            y_hat = self.predict(Xtrain)
-            param -= self.single_grad(Xtrain.getcol(idx),ytrain[idx],y_hat[idx])
+            X = Xtrain.getcol(idx[0])
+            y_hat = self.predict(X)
+            self.param -= lr * self.gradient(X,ytrain[idx[0]],y_hat[idx[0]])
 
         # TODO =============================================================================
         return train_losses, train_errors

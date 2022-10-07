@@ -3,7 +3,7 @@ from scipy import stats
 import numpy as np
 import pandas
 
-np.random.seed(42)
+#np.random.seed(42)
 A = sparse.csr_matrix(sparse.random(5, 2, density=0.5).toarray())
 para = np.array([1,2,3,4,5])
 y_hat = np.array([1,1,1,1,0])
@@ -76,6 +76,8 @@ s = np.zeros(shape=m, dtype=np.float64) # this is the desired type and shape for
 s += (para.T @ X)
 print(s)
 
+idx = np.random.choice(len(y), 1)
+print(idx)
 
 
 def score(para, X):
