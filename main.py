@@ -32,26 +32,29 @@ def main():
     # feat_map = tfidf_extractor(vocab_list, tokenize, word_freq)
 
     # train with GD
-    niter = 100
+    niter = 1
     print("Training using GD for ", niter, "iterations.")
     d = len(vocab_list)
     print(len(vocab_list))
-    """ params = np.array([0.0 for i in range(d)])
+    params = np.array([0.0 for i in range(d)])
     classifier1 = classifier_agent(feat_map,params)
-    classifier1.train_gd(train_sentences,train_labels,niter,0.01)
+    losses, errors = classifier1.train_gd(train_sentences,train_labels,niter,0.01)
+    print('Losses:',losses)
+    print('Errors:',errors)
 
 
 
-
+    
     # train with SGD
     nepoch = 10
-    print("Training using SGD for ", nepoch, "data passes.")
+    print("\nTraining using SGD for ", nepoch, "data passes.")
     d = len(vocab_list)
     params = np.array([0.0 for i in range(d)])
     classifier2 = classifier_agent(feat_map, params)
-    classifier2.train_sgd(train_sentences, train_labels, nepoch, 0.001)
-
-
+    losses, errors = classifier2.train_sgd(train_sentences, train_labels, nepoch, 0.001)
+    print('Losses:',losses)
+    print('Errors:',errors)
+    """ 
     err1 = classifier1.eval_model(test_sentences,test_labels)
     err2 = classifier2.eval_model(test_sentences,test_labels)
 

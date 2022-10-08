@@ -3,7 +3,7 @@ from scipy import stats
 import numpy as np
 import pandas
 
-#np.random.seed(42)
+np.random.seed(42)
 A = sparse.csr_matrix(sparse.random(5, 2, density=0.5).toarray())
 para = np.array([1,2,3,4,5])
 y_hat = np.array([1,1,1,1,0])

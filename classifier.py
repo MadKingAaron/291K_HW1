@@ -5,6 +5,7 @@ from scipy import sparse
 import numpy as np
 from collections import Counter
 import string
+import os.path
 
 # utility functions we provides
 
@@ -38,7 +39,7 @@ class feature_extractor:
         self.vocab_dict = {item: i for i, item in
                            enumerate(vocab)}  # This constructs a word 2 index dictionary
         self.d = len(vocab)
-        print(self.vocab_dict)
+        #print(self.vocab_dict)
 
     def bag_of_word_feature(self, sentence):
         '''
@@ -55,13 +56,14 @@ class feature_extractor:
 
         # Hint 3:  Python's standard library: Collections.Counter might be useful
 
-        x = sparse.csr_matrix((len(self.vocab), 1))
+        x = sparse.csc_matrix((len(self.vocab), 1))
         count = Counter(tokenize(sentence))
         for word in count:
             # Get word location
             word_loc = self.vocab_dict[word]
             # Place word count in x
-            x[word_loc][1] = count[word]
+            x[word_loc, 0] = count[word]
+            #print(x[word_loc,0])
 
         # TODO =============================================================================
         return x
@@ -97,12 +99,26 @@ class classifier_agent():
         :param sentences:  A single text string or a list of text string
         :return: the resulting feature matrix in sparse.csc_array of shape d by m
         '''
+        filename = 'sentences.npz'
+        if self._check_npz_exists(filename):
+            return self._load_npz(filename)
+
         if isinstance(sentences, list):
             X = scipy.sparse.hstack([self.feat_map(sentence) for sentence in sentences])
+            
         else:
             X = self.feat_map(sentences)
+        
+        self._save_npx(filename, X)
+        
         return X
-
+    def _check_npz_exists(self, filename):
+        return os.path.exists(filename)
+    def _load_npz(self, filename):
+        return sparse.load_npz(filename)
+    def _save_npx(self, filename, X):
+        sparse.save_npz(filename, X)
+        
     def score_function(self, X):
         '''
         This function computes the score function of the classifier.
@@ -155,7 +171,7 @@ class classifier_agent():
         if RETURN_SCORE:
             return self.score_function(X)
         
-        preds = self.sigmoid(X,self.params)
+        preds = self.sigmoid(X)
         for i in range(X.shape[1]):
             if preds[i] >= 0.5:
                 preds[i] = 1.0
@@ -220,13 +236,14 @@ class classifier_agent():
         # The function should work for any integer m > 0.
         # You may first call score_function
 
+        #loss = np.zeros_like(y, dtype=np.float64)
         # Get prob for each x_i
         probs = self.sigmoid(X)
         # Get individual loss values for all x_i
         loss_vals = -1*((y*np.log(probs)) + ((1-y)*np.log(1-probs)))
 
         # Get average loss for X
-        loss +=  np.sum(loss_vals)/X.shape[1]
+        loss =  np.sum(loss_vals)/X.shape[1]
 
         """ # Add together individual training loss
         for i in range(X.shape[1]):
@@ -248,8 +265,11 @@ class classifier_agent():
         :param y_hat: m dimensional vector (numpy.array) of predicted label
         :return: Return an nd.array of size the same as self.params
         '''
-        grad = X * (y_hat - y)
-        return np.array(grad).flatten()
+        err = y_hat - y
+        # print('Err:',err)
+        grad = X * (err)
+        #print('Single:', grad)
+        return grad.todense().A1
 
     def gradient(self, X, y):
         '''
@@ -265,12 +285,17 @@ class classifier_agent():
         # Hint 3:  don't make X a dense matrix
 
         grad = np.zeros_like(self.params, dtype=np.float64)
-        y_hat = self.predict(X)
+        y_hat = self.sigmoid(X)#self.predict(X)
+        # print('y_hat:',y_hat)
+        # print("y    :",y)
+
         #grad = np.dot(X.T, (y_hat - y))/X.shape[1]
 
         for i in range(X.shape[1]):
             #print(X.getcol(i).shape)
-            grad += self.single_grad(X.getcol(i).todense(), y[i], y_hat[i])  
+            single = self.single_grad(X.getcol(i), y[i], y_hat[i])
+            # print('Single:', single)
+            grad += single
         
         grad /= X.shape[1]
         # TODO =============================================================================
@@ -294,10 +319,24 @@ class classifier_agent():
         # ytrain[ytrain==0] = -1
         train_losses = [self.loss_function(Xtrain, ytrain)]
         train_errors = [self.error(Xtrain, ytrain)]
+
+        # flat = Xtrain.todense().flatten().A1
+        # flat[0] = 1
+        # print(flat)
+        # print(np.count_nonzero(flat))
+        # print(np.count_nonzero(Xtrain))
         # TODO ======================== YOUR CODE HERE =====================================
         # You need to iteratively update self.params
+        print("Training Start:")
         for n in range(niter):
-            self.params -= lr * self.gradient(Xtrain, ytrain)
+            #print(n)
+            if n % 10 == 0:
+                print(n)
+            grad = self.gradient(Xtrain, ytrain)
+            # print('Grad:',grad)
+            self.params -= lr * grad
+            train_losses.append(self.loss_function(Xtrain, ytrain))
+            train_errors.append(self.error(Xtrain, ytrain))
             # TODO Get error and loss
         # TODO =============================================================================
         return train_losses, train_errors
@@ -329,10 +368,17 @@ class classifier_agent():
 
         
         for n in range(nepoch):
+            
             idx = np.random.choice(len(ytrain), 1)
-            X = Xtrain.getcol(idx[0])
-            y_hat = self.predict(X)
-            self.param -= lr * self.gradient(X,ytrain[idx[0]],y_hat[idx[0]])
+            X_idx = Xtrain.getcol(idx[0])
+            #print(idx)
+            #y_hat = self.predict(X)
+            #print(len(y_hat))
+            # y_hat_idx = y_hat[idx[0]]
+            ytrain_idx = np.array([ytrain[idx[0]]])
+            self.params -= lr * self.gradient(X_idx,ytrain_idx)
+            train_losses.append(self.loss_function(Xtrain, ytrain))
+            train_errors.append(self.error(Xtrain, ytrain))
 
         # TODO =============================================================================
         return train_losses, train_errors
