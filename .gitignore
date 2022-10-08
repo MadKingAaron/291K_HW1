@@ -131,3 +131,5 @@ dmypy.json
 # Project Specific
 ./private_test.py
 private_test.py
+sentences.npz
+sentences1.npz
