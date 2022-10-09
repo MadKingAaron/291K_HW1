@@ -1,6 +1,7 @@
 from classifier import load_data,tokenize, feature_extractor, classifier_agent
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -42,6 +43,9 @@ def main():
     print('Losses:',losses)
     print('Errors:',errors)
 
+    plt.plot(list(range(len(errors))),errors, label="GD Error")
+    
+
 
 
     
@@ -54,6 +58,10 @@ def main():
     losses, errors = classifier2.train_sgd(train_sentences, train_labels, nepoch, 0.001)
     print('Losses:',losses)
     print('Errors:',errors)
+
+    plt.plot(list(range(len(errors))),errors, label="SGD Error")
+    plt.legend()
+    plt.show()
     
     err1 = classifier1.eval_model(test_sentences,test_labels)
     err2 = classifier2.eval_model(test_sentences,test_labels)
