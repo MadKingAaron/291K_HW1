@@ -32,7 +32,7 @@ def main():
     # feat_map = tfidf_extractor(vocab_list, tokenize, word_freq)
 
     # train with GD
-    niter = 1
+    niter = 100
     print("Training using GD for ", niter, "iterations.")
     d = len(vocab_list)
     print(len(vocab_list))
@@ -54,13 +54,13 @@ def main():
     losses, errors = classifier2.train_sgd(train_sentences, train_labels, nepoch, 0.001)
     print('Losses:',losses)
     print('Errors:',errors)
-    """ 
+    
     err1 = classifier1.eval_model(test_sentences,test_labels)
     err2 = classifier2.eval_model(test_sentences,test_labels)
 
     print('GD: test err = ', err1,
-          'SGD: test err = ', err2) """
-
+          'SGD: test err = ', err2)
+    classifier1.save_params_to_file('best_model.npy')
 
 if __name__ == "__main__":
     main()

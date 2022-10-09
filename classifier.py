@@ -56,13 +56,19 @@ class feature_extractor:
 
         # Hint 3:  Python's standard library: Collections.Counter might be useful
 
-        x = sparse.csc_matrix((len(self.vocab), 1))
+        x = sparse.csc_matrix((self.d, 1))
+       
+        # In case words are not in vocab
+        #if 'n/a-NotWord' not in self.vocab_dict:
+            #self.vocab_dict['n/a-NotWord'] = self.d
+        # Get counts of all words in sentence   
         count = Counter(tokenize(sentence))
         for word in count:
-            # Get word location
-            word_loc = self.vocab_dict[word]
-            # Place word count in x
-            x[word_loc, 0] = count[word]
+            if word in self.vocab_dict: # Ignore words not in vocab
+                # Get word location
+                word_loc = self.vocab_dict[word]
+                # Place word count in x
+                x[word_loc, 0] = count[word]
             #print(x[word_loc,0])
 
         # TODO =============================================================================
@@ -99,9 +105,9 @@ class classifier_agent():
         :param sentences:  A single text string or a list of text string
         :return: the resulting feature matrix in sparse.csc_array of shape d by m
         '''
-        filename = 'sentences.npz'
-        if self._check_npz_exists(filename):
-            return self._load_npz(filename)
+        #filename = 'sentences.npz'
+        """ if self._check_npz_exists(filename):
+            return self._load_npz(filename) """
 
         if isinstance(sentences, list):
             X = scipy.sparse.hstack([self.feat_map(sentence) for sentence in sentences])
@@ -109,7 +115,7 @@ class classifier_agent():
         else:
             X = self.feat_map(sentences)
         
-        self._save_npx(filename, X)
+        #self._save_npx(filename, X)
         
         return X
     def _check_npz_exists(self, filename):
