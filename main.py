@@ -36,17 +36,26 @@ def main():
     niter = 100
     print("Training using GD for ", niter, "iterations.")
     d = len(vocab_list)
-    print(len(vocab_list))
+    #print(len(vocab_list))
     params = np.array([0.0 for i in range(d)])
+    #print(len(params))
     classifier1 = classifier_agent(feat_map,params)
     losses, errors = classifier1.train_gd(train_sentences,train_labels,niter,0.01)
+    #print(len(classifier1.params))
     print('Losses:',losses)
     print('Errors:',errors)
 
-    plt.plot(list(range(len(errors))),errors, label="GD Error")
+    #classifier1.save_params_to_file('best_model.npy')
+
+    #print(len(np.load('best_model.npy')))
+
+    #plt.plot(list(range(len(errors))),errors, label="GD Error")
+    #my_sentence = "This movie is amazing! Truly a masterpiece."
+    #ypred = classifier1.predict(my_sentence,RAW_TEXT=True)
+    #print(ypred)
+
+
     
-
-
 
     
     # train with SGD
@@ -59,9 +68,9 @@ def main():
     print('Losses:',losses)
     print('Errors:',errors)
 
-    plt.plot(list(range(len(errors))),errors, label="SGD Error")
-    plt.legend()
-    plt.show()
+    #plt.plot(list(range(len(errors))),errors, label="SGD Error")
+    #plt.legend()
+    #plt.show()
     
     err1 = classifier1.eval_model(test_sentences,test_labels)
     err2 = classifier2.eval_model(test_sentences,test_labels)
